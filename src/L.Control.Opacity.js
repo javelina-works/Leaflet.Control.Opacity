@@ -119,7 +119,7 @@ L.Control.Opacity = L.Control.extend({
     // ラベル・スライダー追加
     _addItem: function (obj) {
         const label = document.createElement('label');
-        const input = document.createElement('input');
+        let input = document.createElement('input');
         if (obj.overlay) {
             // スライドバー追加
             input.type = 'range';
