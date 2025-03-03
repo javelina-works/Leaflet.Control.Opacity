@@ -1,21 +1,45 @@
 import { terser } from "rollup-plugin-terser";
 import resolve from "rollup-plugin-node-resolve";
+import copy from "rollup-plugin-copy";
 
-export default {
-  input: "src/L.Control.Opacity.js", // Entry file
-  output: [
-    {
+export default [
+  // Non-minified version
+  {
+    input: "src/L.Control.Opacity.js",
+    output: {
       file: "dist/L.Control.Opacity.js",
       format: "umd",
       name: "L.Control.Opacity",
-      sourcemap: true,
+      sourcemap: false, // Remove source map for this small plugin
     },
-    {
+    plugins: [
+      resolve(),
+      copy({
+        targets: [
+          { src: "src/L.Control.Opacity.css", dest: "dist" }, // Copy CSS
+          { src: "src/L.Control.Opacity.d.ts", dest: "dist" }, // Copy .d.ts
+        ]
+      })
+    ],
+  },
+
+  // ✅ Minified version
+  {
+    input: "src/L.Control.Opacity.js",
+    output: {
       file: "dist/L.Control.Opacity.min.js",
       format: "umd",
       name: "L.Control.Opacity",
-      plugins: [terser()], // Minifies the file
+      sourcemap: false, // Remove source map for this small plugin
     },
-  ],
-  plugins: [resolve()],
-};
+    plugins: [
+      resolve(),
+      terser(),
+      copy({
+        targets: [
+          { src: "src/L.Control.Opacity.css", dest: "dist" }, // Copy CSS (again)
+        ]
+      })
+    ],
+  }
+];

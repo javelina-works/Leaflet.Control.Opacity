@@ -1,1 +1,167 @@
-L.Control.Opacity=L.Control.extend({options:{collapsed:!1,position:"topright",label:null},initialize:function(t,e){for(const i in L.Util.setOptions(this,e),this._layerControlInputs=[],this._layers=[],this._lastZIndex=0,t)this._addLayer(t[i],i,!0)},onAdd:function(t){return this._initLayout(),this._update(),this._container},expand:function(){L.DomUtil.addClass(this._container,"leaflet-control-layers-expanded"),this._form.style.height=null;var t=this._map.getSize().y-(this._container.offsetTop+50);return t<this._form.clientHeight?(L.DomUtil.addClass(this._form,"leaflet-control-layers-scrollbar"),this._form.style.height=t+"px"):L.DomUtil.removeClass(this._form,"leaflet-control-layers-scrollbar"),this},collapse:function(){return L.DomUtil.removeClass(this._container,"leaflet-control-layers-expanded"),this},_initLayout:function(){const t="leaflet-control-layers",e=this._container=L.DomUtil.create("div",t),i=this.options.collapsed;if(e.setAttribute("aria-haspopup",!0),L.DomEvent.disableClickPropagation(e),L.DomEvent.disableScrollPropagation(e),this.options.label){const o=L.DomUtil.create("p",t+"-label");o.innerHTML=this.options.label,e.appendChild(o)}var s=this._form=L.DomUtil.create("form",t+"-list");i&&(this._map.on("click zoom move",this.collapse,this),L.Browser.android||L.DomEvent.on(e,{mouseenter:this.expand,mouseleave:this.collapse},this));const a=this._layersLink=L.DomUtil.create("a",t+"-toggle",e);a.href="#",a.title="Layers",L.Browser.touch?(L.DomEvent.on(a,"click",L.DomEvent.stop),L.DomEvent.on(a,"click",this.expand,this)):L.DomEvent.on(a,"focus",this.expand,this),i||this.expand(),this._baseLayersList=L.DomUtil.create("div",t+"-base",s),this._separator=L.DomUtil.create("div",t+"-separator",s),this._overlaysList=L.DomUtil.create("div",t+"-overlays",s),e.appendChild(s)},_getLayer:function(e){for(let t=0;t<this._layers.length;t++)if(this._layers[t]&&L.Util.stamp(this._layers[t].layer)===e)return this._layers[t]},_addLayer:function(t,e,i){this._layers.push({layer:t,name:e,overlay:i})},_update:function(){if(!this._container)return this;L.DomUtil.empty(this._baseLayersList),L.DomUtil.empty(this._overlaysList),this._layerControlInputs=[];let t,e,i,s,a=0;for(i=0;i<this._layers.length;i++)s=this._layers[i],this._addItem(s),e=e||s.overlay,t=t||!s.overlay,a+=s.overlay?0:1;this.options.hideSingleBase&&(t=t&&1<a,this._baseLayersList.style.display=t?"":"none"),this._separator.style.display=e&&t?"":"none"},_addItem:function(t){const e=document.createElement("label"),i=document.createElement("input");t.overlay?(i.type="range",i.className="leaflet-control-layers-range",i.min=0,i.max=100,i.value=100*t.layer.options.opacity):i=this._createRadioElement("leaflet-base-layers",checked),this._layerControlInputs.push(i),i.layerId=L.Util.stamp(t.layer),i.addEventListener("input",t=>{t=t.target.value;const e=this._getLayer(i.layerId).layer;void 0===e._url||e.setOpacity(Number(t/100))});const s=document.createElement("span");s.innerHTML=" "+t.name;const a=document.createElement("div"),o=document.createElement("div");e.appendChild(a),a.appendChild(s),e.appendChild(o),o.appendChild(i);const l=t.overlay?this._overlaysList:this._baseLayersList;l.appendChild(e)}}),L.control.opacity=function(t,e){return new L.Control.Opacity(t,e)};
+(function (factory) {
+    typeof define === 'function' && define.amd ? define(factory) :
+    factory();
+})((function () { 'use strict';
+
+    L.Control.Opacity = L.Control.extend({
+        options: {
+            collapsed: false,
+            position: 'topright',
+            label: null,
+        },
+        initialize: function (overlays, options) {
+            L.Util.setOptions(this, options);
+            this._layerControlInputs = [];
+            this._layers = [];
+            this._lastZIndex = 0;
+            for (const i in overlays) {
+                this._addLayer(overlays[i], i, true);
+            }
+        },
+        onAdd: function (map) {
+            this._initLayout();
+            this._update();
+            return this._container;
+        },
+        expand: function () {
+            L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
+            this._form.style.height = null;
+            const acceptableHeight = this._map.getSize().y - (this._container.offsetTop + 50);
+            if (acceptableHeight < this._form.clientHeight) {
+                L.DomUtil.addClass(this._form, 'leaflet-control-layers-scrollbar');
+                this._form.style.height = acceptableHeight + 'px';
+            } else {
+                L.DomUtil.removeClass(this._form, 'leaflet-control-layers-scrollbar');
+            }
+            return this;
+        },
+        collapse: function () {
+            L.DomUtil.removeClass(this._container, 'leaflet-control-layers-expanded');
+            return this;
+        },
+        _initLayout: function () {
+            const className = 'leaflet-control-layers',
+                container = (this._container = L.DomUtil.create('div', className)),
+                collapsed = this.options.collapsed;
+            container.setAttribute('aria-haspopup', true);
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.disableScrollPropagation(container);
+            if (this.options.label) {
+                const labelP = L.DomUtil.create('p', className + '-label');
+                labelP.innerHTML = this.options.label;
+                container.appendChild(labelP);
+            }
+            const form = (this._form = L.DomUtil.create('form', className + '-list'));
+            if (collapsed) {
+                this._map.on('click zoom move', this.collapse, this);
+                if (!L.Browser.android) {
+                    L.DomEvent.on(
+                        container,
+                        {
+                            mouseenter: this.expand,
+                            mouseleave: this.collapse,
+                        },
+                        this
+                    );
+                }
+            }
+            const link = (this._layersLink = L.DomUtil.create('a', className + '-toggle', container));
+            link.href = '#';
+            link.title = 'Layers';
+            if (L.Browser.touch) {
+                L.DomEvent.on(link, 'click', L.DomEvent.stop);
+                L.DomEvent.on(link, 'click', this.expand, this);
+            } else {
+                L.DomEvent.on(link, 'focus', this.expand, this);
+            }
+            if (!collapsed) {
+                this.expand();
+            }
+            this._baseLayersList = L.DomUtil.create('div', className + '-base', form);
+            this._separator = L.DomUtil.create('div', className + '-separator', form);
+            this._overlaysList = L.DomUtil.create('div', className + '-overlays', form);
+            container.appendChild(form);
+        },
+        _getLayer: function (id) {
+            for (let i = 0; i < this._layers.length; i++) {
+                if (this._layers[i] && L.Util.stamp(this._layers[i].layer) === id) {
+                    return this._layers[i];
+                }
+            }
+        },
+        _addLayer: function (layer, name, overlay) {
+            this._layers.push({
+                layer: layer,
+                name: name,
+                overlay: overlay,
+            });
+        },
+        _update: function () {
+            if (!this._container) {
+                return this;
+            }
+            L.DomUtil.empty(this._baseLayersList);
+            L.DomUtil.empty(this._overlaysList);
+            this._layerControlInputs = [];
+            let baseLayersPresent,
+                overlaysPresent,
+                i,
+                obj,
+                baseLayersCount = 0;
+            for (i = 0; i < this._layers.length; i++) {
+                obj = this._layers[i];
+                this._addItem(obj);
+                overlaysPresent = overlaysPresent || obj.overlay;
+                baseLayersPresent = baseLayersPresent || !obj.overlay;
+                baseLayersCount += !obj.overlay ? 1 : 0;
+            }
+            if (this.options.hideSingleBase) {
+                baseLayersPresent = baseLayersPresent && baseLayersCount > 1;
+                this._baseLayersList.style.display = baseLayersPresent ? '' : 'none';
+            }
+            this._separator.style.display = overlaysPresent && baseLayersPresent ? '' : 'none';
+        },
+        // ラベル・スライダー追加
+        _addItem: function (obj) {
+            const label = document.createElement('label');
+            const input = document.createElement('input');
+            if (obj.overlay) {
+                // スライドバー追加
+                input.type = 'range';
+                input.className = 'leaflet-control-layers-range';
+                input.min = 0;
+                input.max = 100;
+                input.value = obj.layer.options.opacity * 100;
+            } else {
+                input = this._createRadioElement('leaflet-base-layers', checked);
+            }
+            this._layerControlInputs.push(input);
+            input.layerId = L.Util.stamp(obj.layer);
+            // スライドバーイベント
+            input.addEventListener('input', (event) => {
+                const rgValue = event.target.value;
+                const layer = this._getLayer(input.layerId).layer;
+                // 背景ラスタのみ対象
+                if (typeof layer._url === 'undefined') ; else {
+                    // 透過度設定
+                    layer.setOpacity(Number(rgValue / 100));
+                }
+            });
+            const name = document.createElement('span');
+            name.innerHTML = ' ' + obj.name;
+            const holder = document.createElement('div');
+            const holder2 = document.createElement('div');
+            label.appendChild(holder);
+            holder.appendChild(name);
+            label.appendChild(holder2);
+            holder2.appendChild(input);
+            const container = obj.overlay ? this._overlaysList : this._baseLayersList;
+            container.appendChild(label);
+        },
+    });
+
+    L.control.opacity = function (overlays, options) {
+        return new L.Control.Opacity(overlays, options);
+    };
+
+}));
