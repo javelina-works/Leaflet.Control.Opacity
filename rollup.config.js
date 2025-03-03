@@ -34,7 +34,13 @@ export default [
     },
     plugins: [
       resolve(),
-      terser(),
+      terser({
+        mangle: true,  // Preserve variable names
+        compress: {
+          passes: 2,  // Ensures safe optimization
+          unsafe: false,  // Prevents aggressive minification
+        },
+      }),
       copy({
         targets: [
           { src: "src/L.Control.Opacity.css", dest: "dist" }, // Copy CSS (again)
