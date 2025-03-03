@@ -14,7 +14,7 @@
             this._layerControlInputs = [];
             this._layers = [];
             this._lastZIndex = 0;
-            for (var i in overlays) {
+            for (let i in overlays) {
                 this._addLayer(overlays[i], i, true);
             }
         },
