@@ -1,4 +1,7 @@
 
+# Ignore packages for rollup, dist, and testing
+node_modules/ 
+
 dist/.DS_Store
 src/.DS_Store
 docs/plugin/Leaflet.Control.Opacity/.DS_Store
